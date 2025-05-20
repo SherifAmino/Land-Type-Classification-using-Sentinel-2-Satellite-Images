@@ -1,24 +1,112 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Land Type Classifier</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <div class="container">
-        <h1>Upload Satellite Image</h1>
-        <form method="post" enctype="multipart/form-data">
-            <input type="file" name="file" required>
-            <button type="submit">Predict</button>
-        </form>
+        <header>
+            <h1><i class="fas fa-satellite"></i> Land Type Classifier</h1>
+            <p class="subtitle">Upload a satellite image to identify the land type</p>
+        </header>
+
+        <div class="upload-section">
+            {% if error %}
+                <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i> {{ error }}
+                </div>
+            {% endif %}
+            
+            <form method="post" enctype="multipart/form-data">
+                <div class="file-upload">
+                    <label for="file-input">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>Choose a satellite image</span>
+                        </div>
+                    </label>
+                    <input id="file-input" type="file" name="file" accept="image/*" required>
+                    <p class="file-name">No file selected</p>
+                </div>
+                <button type="submit" class="btn-predict">
+                    <i class="fas fa-search"></i> Analyze Image
+                </button>
+            </form>
+        </div>
 
         {% if prediction %}
             <div class="result">
-                <h2>Prediction: {{ prediction }}</h2>
-                <p>Confidence: {{ confidence | round(2) }}</p>
-                <img src="{{ image_path }}" alt="Uploaded Image" width="300">
+                <h2>Classification Results</h2>
+                <div class="result-content">
+                    <div class="result-image">
+                        <img src="{{ image_path }}" alt="Uploaded Satellite Image">
+                    </div>
+                    <div class="result-info">
+                        <div class="prediction">
+                            <span class="label">Land Type:</span>
+                            <span class="value">{{ prediction }}</span>
+                        </div>
+                        <div class="confidence">
+                            <span class="label">Confidence:</span>
+                            <span class="value">{{ (confidence * 100)|int }}%</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-progress confidence-value-{{ (confidence * 100)|int }}"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="land-type-info">
+                    <h3>About {{ prediction }}</h3>
+                    <p class="land-description">
+                        {% if prediction == 'AnnualCrop' %}
+                            Agricultural land used for crops that are replanted after each harvest, like wheat, corn, and soybeans.
+                        {% elif prediction == 'Forest' %}
+                            Area with high density of trees, providing habitat for wildlife and playing a crucial role in our ecosystem.
+                        {% elif prediction == 'HerbaceousVegetation' %}
+                            Land covered primarily with grasses and other non-woody plants, often found in meadows and prairies.
+                        {% elif prediction == 'Highway' %}
+                            Major road infrastructure designed for high-speed vehicular traffic connecting different regions.
+                        {% elif prediction == 'Industrial' %}
+                            Zone designated for manufacturing, processing, and distribution of goods, typically containing factories and warehouses.
+                        {% elif prediction == 'Pasture' %}
+                            Land used for grazing livestock, typically covered with grasses and other plants suitable for animal feed.
+                        {% elif prediction == 'PermanentCrop' %}
+                            Agricultural land with crops that are not replanted after harvest, like orchards and vineyards.
+                        {% elif prediction == 'Residential' %}
+                            Area predominantly consisting of housing and living spaces for people.
+                        {% elif prediction == 'River' %}
+                            Natural flowing watercourse that plays a vital role in the water cycle and ecosystem.
+                        {% elif prediction == 'SeaLake' %}
+                            Large body of water, either connected to the ocean (sea) or landlocked (lake).
+                        {% else %}
+                            Information about this land type is not available.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        {% else %}
+            <div class="placeholder">
+                <div class="placeholder-icon">
+                    <i class="fas fa-map-marked-alt"></i>
+                </div>
+                <p>Upload a satellite image to see the classification results</p>
             </div>
         {% endif %}
+
+        <footer>
+            <p>Powered by TensorFlow | ResNet50 Model</p>
+        </footer>
     </div>
+
+    <script>
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            var fileName = e.target.files[0] ? e.target.files[0].name : 'No file selected';
+            document.querySelector('.file-name').textContent = fileName;
+        });
+    </script>
 </body>
 </html>
